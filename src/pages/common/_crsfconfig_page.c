@@ -49,7 +49,7 @@ static const char *crsfconfig_str_cb(guiObject_t *obj, const void *data)
     (void)obj;
     int idx = (intptr_t)data;
 
-    return crsf_devices[idx].address ? crsf_devices[idx].name : "";
+    return crsf_devices[idx].address ? "device" : "";
 }
 
 void PAGE_CRSFConfigEvent()

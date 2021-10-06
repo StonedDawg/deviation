@@ -465,15 +465,34 @@ static char *alloc_string(s32 bytes) {
     next_string += bytes;
     return p;
 }
+size_t strcpylen(char *dest, const char *src) {
+    const char *s = src;
+    while ((*dest++ = *s++))
+        ;
+    return s - src;
+}
 
 static void add_device(u8 *buffer) {
     for (int i=0; i < CRSF_MAX_DEVICES; i++) {
+        int namelength = 0;
         if (crsf_devices[i].address == buffer[2]) return;  //  device already in table
         if (crsf_devices[i].address == 0) {
             //  not found, add to table
             buffer += 2;
             crsf_devices[i].address = (u8) *buffer++;
-            buffer += strlcpy(crsf_devices[i].name, (const char *)buffer, CRSF_MAX_NAME_LEN) + 1;
+            
+            //OPT 1 (ORIGINAL)
+            namelength = strlcpy(crsf_devices[i].name, (const char *)buffer, CRSF_MAX_NAME_LEN);
+            buffer += namelength + 1;
+            
+            //OPT 2 (same as opt 3)
+            //namelength = strcpylen(crsf_devices[i].name, (const char *)buffer);
+            //buffer += namelength + 1;
+            
+            //OPT 3
+            //namelength = strlcpy(crsf_devices[i].name, (const char *)buffer, CRSF_MAX_NAME_LEN);
+            //buffer += namelength + 2;
+
             crsf_devices[i].serial_number = parse_u32(buffer);
             buffer += 4;
             crsf_devices[i].hardware_id = parse_u32(buffer);
@@ -481,8 +500,8 @@ static void add_device(u8 *buffer) {
             crsf_devices[i].firmware_id = parse_u32(buffer);
             buffer += 4;
             crsf_devices[i].number_of_params = *buffer;
-            buffer += 1;
-            crsf_devices[i].params_version = *buffer;
+            //buffer += 1;
+            //crsf_devices[i].params_version = *buffer;
             break;
         }
     }
